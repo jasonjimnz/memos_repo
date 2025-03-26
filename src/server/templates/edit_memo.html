@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8"> {# Make it a bit wider #}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title mb-4">Edit Memo</h1>
+                <form method="POST" action="{{ url_for('main.edit_memo', memo_id=memo.id) }}" novalidate>
+                    {{ form.hidden_tag() }} {# CSRF token #}
+
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", rows=10, id="memo-content-editor") }}
+                        {% for error in form.content.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {# Add file handling here later if needed #}
+
+                    <div class="d-flex justify-content-end"> {# Align buttons to the right #}
+                        <a href="{{ url_for('main.index') }}" class="btn btn-secondary me-2">Cancel</a>
+                        {{ form.submit(value='Update Memo', class_='btn btn-primary') }}
+                    </div>
+                </form>
+            </div>
+        </div>
+         {# Add section to manage existing resources later #}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }} {# Optional: Include scripts from parent template if needed #}
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        // Check if the element exists before initializing
+        var editorElement = document.getElementById('memo-content-editor');
+        if (editorElement) {
+            var easyMDE = new EasyMDE({
+                element: editorElement,
+                spellChecker: false,
+                // status: false,
+            });
+        }
+    });
+</script>
+{% endblock %}

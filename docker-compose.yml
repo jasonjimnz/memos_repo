@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./instance_data:/app/instance
+    env_file:
+      - .env
+    # Optionally restart policy
+    # restart: unless-stopped

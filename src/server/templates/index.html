@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Welcome, {{ current_user.username }}!</h1>
+
+    {# ... Inside index.html block content ... #}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Create a new Memo:</h2>
+            <form method="POST" action="{{ url_for('main.index') }}" novalidate enctype="multipart/form-data">
+                {{ form.hidden_tag() }} {# CSRF token #}
+
+                <div class="mb-3">
+                    {{ form.content.label(class="form-label") }}
+                    {# Add form-control class #}
+                    {{ form.content(class="form-control", rows=6, id="memo-content-editor") }} {# Increased rows slightly #}
+                    {% for error in form.content.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.resource_files.label(class="form-label") }}
+                    {# Add form-control class for file input #}
+                    {{ form.resource_files(class="form-control") }}
+                    {% for error in form.resource_files.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {# Style button #}
+                {{ form.submit(class_='btn btn-success') }} {# Use btn-success for create actions #}
+            </form>
+        </div>
+    </div>
+    <hr class="my-4"> {# Add margin to the horizontal rule #}
+
+    {# ... Inside index.html block content, after the form ... #}
+    <h2>Your Memos:</h2>
+    {% if memos %}
+        <ul class="list-group"> {# Use list-group #}
+            {% for memo in memos %}
+                <li class="list-group-item mb-3 shadow-sm"> {# Use list-group-item, add margin and shadow #}
+                    <div class="memo-content mb-2"> {# Add margin below content #}
+                        {{ memo.content | markdown }}
+                    </div>
+
+                    {# Resources Section #}
+                    {% if memo.resources %}
+                        <div class="memo-resources mb-2 small border-top pt-2 mt-2"> {# Style resource section #}
+                            <strong>Attachments:</strong>
+                            <ul class="list-unstyled"> {# Remove default list bullets #}
+                                {% for resource in memo.resources %}
+                                    <li class="d-flex justify-content-between align-items-center">
+                                        {# Use flexbox for layout #}
+                                        <div>
+                                            <a href="{{ url_for('main.uploaded_file', filename=resource.internal_filename) }}"
+                                               target="_blank">
+                                                <i class="bi bi-paperclip"></i> {# Icon #}
+                                                {{ resource.filename }}
+                                            </a>
+                                            <span class="text-muted">({{ (resource.size / 1024)|round(1) }} KB)</span>
+                                        </div>
+                                        {# Resource Delete Form - style button #}
+                                        <form action="{{ url_for('main.delete_resource', resource_id=resource.id) }}"
+                                              method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Are you sure you want to delete this attachment? This cannot be undone.');">
+                                                <i class="bi bi-trash"></i> {# Icon #}
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {# Meta Info and Actions Section #}
+                    <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                        <small class="text-muted">
+                            Created: {{ memo.created_ts.strftime('%Y-%m-%d %H:%M') }}
+                            {% if memo.updated_ts and memo.updated_ts != memo.created_ts %} | Updated:
+                                {{ memo.updated_ts.strftime('%Y-%m-%d %H:%M') }} {% endif %}
+                        </small>
+                        <div>
+                            {# Edit button styling #}
+                            <a href="{{ url_for('main.edit_memo', memo_id=memo.id) }}"
+                               class="btn btn-outline-secondary btn-sm me-2">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            {# Memo Delete form styling #}
+                            <form action="{{ url_for('main.delete_memo', memo_id=memo.id) }}" method="POST"
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Are you sure you want to delete this memo?');">
+                                    <i class="bi bi-trash"></i> Delete Memo
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-secondary">You haven't created any memos yet.</div> {# Use Bootstrap alert #}
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function(){
+        // Check if the element exists before initializing
+        var editorElement = document.getElementById('memo-content-editor');
+        if (editorElement) {
+            var easyMDE = new EasyMDE({
+                element: editorElement,
+                spellChecker: false, // Disable spell checker if desired
+                // status: false, // Hide status bar if desired
+                // You can customize toolbar buttons, see EasyMDE docs
+                // toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen"],
+            });
+        }
+    });
+</script>
+{% endblock %}
