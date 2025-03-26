@@ -40,3 +40,6 @@ ests/
 .coverage
 htmlcov/
 *.log
+
+# Ignore all databases
+*.db

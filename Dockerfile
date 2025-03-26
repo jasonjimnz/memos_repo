@@ -7,9 +7,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Prevent python from buffering stdout/stderr
 ENV PYTHONUNBUFFERED 1
 # Point Flask to your run script
-ENV FLASK_APP=run.py
+ENV FLASK_APP=app.py
 # Set a default database URL (can be overridden by Docker Compose)
-ENV DATABASE_URL=sqlite:////app/instance/app.db
+ENV DATABASE_URL=sqlite:////app/instance/memos.db
 # Use absolute path inside container
 
 # Set the working directory in the container
@@ -22,7 +22,8 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install uv
+RUN uv pip install --no-cache-dir -r requirements.txt --system
 
 # Create instance folder structure (will be mounted over by volume)
 # This ensures paths exist if volume isn't mounted immediately.
